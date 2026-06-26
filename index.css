@@ -45,7 +45,9 @@
 /* ============================================
    RESET & BASE
    ============================================ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -69,13 +71,11 @@ body {
         radial-gradient(ellipse at 20% 50%, rgba(42, 31, 16, 0.6) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 50%, rgba(42, 31, 16, 0.4) 0%, transparent 50%),
         radial-gradient(ellipse at 50% 0%, rgba(212, 168, 67, 0.05) 0%, transparent 40%),
-        repeating-linear-gradient(
-            0deg,
+        repeating-linear-gradient(0deg,
             transparent,
             transparent 2px,
             rgba(42, 31, 16, 0.03) 2px,
-            rgba(42, 31, 16, 0.03) 4px
-        );
+            rgba(42, 31, 16, 0.03) 4px);
     background-color: var(--bg-leather);
 }
 
@@ -402,14 +402,12 @@ body {
 /* Book Spine */
 .book-spine {
     width: 12px;
-    background: linear-gradient(
-        90deg,
-        var(--spine-color) 0%,
-        #3d2e18 30%,
-        #1a1209 50%,
-        #3d2e18 70%,
-        var(--spine-color) 100%
-    );
+    background: linear-gradient(90deg,
+            var(--spine-color) 0%,
+            #3d2e18 30%,
+            #1a1209 50%,
+            #3d2e18 70%,
+            var(--spine-color) 100%);
     flex-shrink: 0;
     box-shadow:
         -4px 0 12px rgba(0, 0, 0, 0.3),
@@ -428,6 +426,8 @@ body {
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.35s var(--ease-spring), box-shadow 0.35s var(--ease-out);
+    /* Enable cqw units so font-sizes scale with card width */
+    container-type: inline-size;
 }
 
 .card-slot:hover {
@@ -459,7 +459,7 @@ body {
 }
 
 .card-watermark .wm-26 {
-    font-size: 1.8em;
+    font-size: 19cqw;
     font-weight: 900;
     color: rgba(255, 255, 255, 0.25);
     letter-spacing: -2px;
@@ -467,7 +467,7 @@ body {
 }
 
 .card-watermark .wm-fifa {
-    font-size: 0.5em;
+    font-size: 5.3cqw;
     font-weight: 800;
     color: rgba(255, 255, 255, 0.2);
     letter-spacing: 2px;
@@ -510,7 +510,7 @@ body {
     right: 0;
     z-index: 3;
     padding: 6% 5% 5%;
-    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 100%);
     text-align: center;
 }
 
@@ -518,7 +518,7 @@ body {
     font-weight: 700;
     color: #fff;
     text-transform: uppercase;
-    font-size: 0.6em;
+    font-size: 6.4cqw;
     letter-spacing: 0.5px;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     white-space: nowrap;
@@ -532,7 +532,7 @@ body {
     bottom: 18%;
     right: 5%;
     z-index: 4;
-    font-size: 0.9em;
+    font-size: 9.6cqw;
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
@@ -542,14 +542,12 @@ body {
     position: absolute;
     inset: 0;
     z-index: 5;
-    background: linear-gradient(
-        105deg,
-        transparent 40%,
-        rgba(255, 255, 255, 0.08) 45%,
-        rgba(255, 255, 255, 0.15) 50%,
-        rgba(255, 255, 255, 0.08) 55%,
-        transparent 60%
-    );
+    background: linear-gradient(105deg,
+            transparent 40%,
+            rgba(255, 255, 255, 0.08) 45%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0.08) 55%,
+            transparent 60%);
     transform: translateX(-100%);
     transition: transform 0.6s var(--ease-out);
     pointer-events: none;
@@ -598,8 +596,146 @@ body {
 }
 
 /* ============================================
-   FOOTER
+   CARD WITH COUNTRY TEMPLATE (plantilla PNG)
    ============================================ */
+
+/* The plantilla image fills the entire card as background */
+.card-plantilla {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    /* stretch to fit exactly like in Roblox */
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* When a card has a template, hide the gradient bg and watermark */
+.card-has-template .card-bg {
+    display: none;
+}
+
+.card-has-template .card-watermark {
+    display: none;
+}
+
+.card-has-template .card-flag {
+    display: none;
+}
+
+/* Avatar: big, overlaid on top of the plantilla */
+.card-has-template .card-avatar {
+    position: absolute;
+    width: 115%;
+    height: 85%;
+    top: 0;
+    left: -8%;
+    z-index: 2;
+    overflow: hidden;
+    background: transparent;
+}
+
+.card-has-template .card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* Name: positioned over the first red bar of the plantilla (~82-88% height) */
+.card-has-template .card-name-bar {
+    position: absolute;
+    bottom: 14%;
+    /* barra roja principal esta aprox al 14% desde abajo */
+    left: 0;
+    right: 20%;
+    /* dejar espacio para los textos verticales a la derecha */
+    z-index: 3;
+    padding: 1.5% 4%;
+    background: transparent;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 9%;
+    /* altura aproximada de la barra roja */
+}
+
+.card-has-template .card-name {
+    font-weight: 900;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-size: 3cqw;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================
+   PAGE BACKGROUND IMAGE (country fondo)
+   ============================================ */
+.page-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    opacity: 0.35;
+    transition: opacity 0.6s var(--ease-out);
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* Make page-inner sit above the background image */
+.page .page-inner {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================
+   DOWNLOAD BUTTON (modal)
+   ============================================ */
+.download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, #d4a843, #f0d080);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 24px;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s var(--ease-spring), box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(212, 168, 67, 0.4);
+    width: 100%;
+}
+
+.download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 168, 67, 0.5);
+}
+
+.download-btn:active {
+    transform: scale(0.97);
+}
+
+.download-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
 #album-footer {
     padding: var(--space-md) var(--space-xl);
     text-align: center;
@@ -666,22 +802,7 @@ body {
 .modal-card-container .card-slot::after {
     display: none;
 }
-
-.modal-card-container .card-watermark .wm-26 {
-    font-size: 3rem;
-}
-
-.modal-card-container .card-watermark .wm-fifa {
-    font-size: 0.9rem;
-}
-
-.modal-card-container .card-name {
-    font-size: 1rem;
-}
-
-.modal-card-container .card-flag {
-    font-size: 1.5rem;
-}
+/* No font-size overrides needed: cqw in card-slot scales everything automatically */
 
 .modal-close {
     position: absolute;
@@ -765,7 +886,9 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .loading-text {
@@ -786,6 +909,7 @@ body {
         opacity: 0;
         transform: translateY(8px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -837,14 +961,12 @@ body {
     .book-spine {
         width: 100%;
         height: 6px;
-        background: linear-gradient(
-            180deg,
-            var(--spine-color) 0%,
-            #3d2e18 30%,
-            #1a1209 50%,
-            #3d2e18 70%,
-            var(--spine-color) 100%
-        );
+        background: linear-gradient(180deg,
+                var(--spine-color) 0%,
+                #3d2e18 30%,
+                #1a1209 50%,
+                #3d2e18 70%,
+                var(--spine-color) 100%);
         box-shadow:
             0 -4px 12px rgba(0, 0, 0, 0.3),
             0 4px 12px rgba(0, 0, 0, 0.3);
@@ -862,8 +984,13 @@ body {
         z-index: 60;
     }
 
-    .nav-prev { left: 12px; }
-    .nav-next { right: 12px; }
+    .nav-prev {
+        left: 12px;
+    }
+
+    .nav-next {
+        right: 12px;
+    }
 
     #album-main {
         flex-direction: column;

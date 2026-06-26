@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurador de Cromo — Álbum Mundial 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d0d;
+            --panel: #1a1a1a;
+            --border: rgba(255, 255, 255, 0.1);
+            --gold: #d4a843;
+            --gold2: #f0d080;
+            --text: #ffffff;
+            --muted: rgba(255, 255, 255, 0.5);
+            --accent: #2563eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(13, 13, 13, 0.9);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .header-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--gold2), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-sub {
+            font-size: 0.75rem;
+            color: var(--muted);
+            letter-spacing: 2px;
+        }
+
+        .back-link {
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            gap: 0;
+            overflow: hidden;
+            height: calc(100vh - 60px);
+        }
+
+        /* ── LEFT PANEL ── */
+        .controls {
+            width: 300px;
+            flex-shrink: 0;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-row label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            white-space: nowrap;
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .control-row input[type="range"] {
+            flex: 1;
+            accent-color: var(--gold);
+            cursor: pointer;
+        }
+
+        .control-row .val {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--gold2);
+            width: 36px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            padding: 8px 10px;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+        }
+
+        select:focus {
+            border-color: var(--gold);
+        }
+
+        select option {
+            background: #222;
+        }
+
+        .country-select-wrap {
+            position: relative;
+        }
+
+        .country-select-wrap::after {
+            content: '▾';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gold);
+            pointer-events: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: #1a1a1a;
+            box-shadow: 0 4px 16px rgba(212, 168, 67, 0.3);
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 168, 67, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .tip {
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .css-output {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.65rem;
+            color: #adf;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 180px;
+            overflow-y: auto;
+            user-select: all;
+            cursor: text;
+        }
+
+        /* ── RIGHT PANEL: canvas area ── */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(ellipse at 30% 50%, rgba(30, 30, 60, 0.4) 0%, transparent 60%),
+                #111;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-preview {
+            position: relative;
+            /* aspect ratio 1082:1453 */
+            aspect-ratio: 1082 / 1453;
+            height: min(85vh, 85vw * 1082/1453);
+            max-height: 560px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            cursor: default;
+        }
+
+        #plantilla-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #bg-gradient {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        #avatar-img {
+            position: absolute;
+            z-index: 2;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-drag: none;
+            transform-origin: top left;
+        }
+
+        #avatar-img:active {
+            cursor: grabbing;
+        }
+
+        #name-label {
+            position: absolute;
+            z-index: 3;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+            cursor: move;
+            user-select: none;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        .hint-overlay {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.35);
+            pointer-events: none;
+            z-index: 10;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div>
+            <div class="header-title">CONFIGURADOR DE CROMO</div>
+            <div class="header-sub">ÁLBUM MUNDIAL 2026</div>
+        </div>
+        <a class="back-link" href="index.html">← Volver al álbum</a>
+    </header>
+
+    <div class="main">
+
+        <!-- LEFT: Controls -->
+        <div class="controls">
+
+            <!-- País / Plantilla -->
+            <div class="section">
+                <div class="section-title">🌍 País</div>
+                <div class="country-select-wrap">
+                    <select id="country-select"></select>
+                </div>
+            </div>
+
+            <!-- Avatar -->
+            <div class="section">
+                <div class="section-title">👤 Avatar</div>
+                <div class="control-row" style="margin-bottom:12px; gap:4px">
+                    <input type="text" id="test-username" value="Cxris_g"
+                        style="flex:1; padding:6px; border-radius:6px; border:1px solid var(--border); background:rgba(0,0,0,0.5); color:var(--text); font-family:var(--font); font-size:0.8rem"
+                        placeholder="Roblox Username">
+                    <button class="btn btn-outline" style="width:auto; padding:6px 12px; font-size:0.75rem"
+                        onclick="fetchTestAvatar()">Cargar</button>
+                </div>
+                <div class="control-row">
+                    <label>Tamaño</label>
+                    <input type="range" id="sl-size" min="30" max="160" value="90">
+                    <span class="val" id="v-size">90%</span>
+                </div>
+            </div>
+
+            <!-- Posición -->
+            <div class="section">
+                <div class="section-title">📐 Posición Avatar</div>
+                <div class="control-row">
+                    <label>Horizontal</label>
+                    <input type="range" id="sl-x" min="-30" max="50" value="-8">
+                    <span class="val" id="v-x">-8%</span>
+                </div>
+                <div class="control-row">
+                    <label>Vertical</label>
+                    <input type="range" id="sl-y" min="-20" max="30" value="0">
+                    <span class="val" id="v-y">0%</span>
+                </div>
+                <p class="tip" style="margin-top:4px">También puedes arrastrar el avatar con el mouse</p>
+            </div>
+
+            <!-- Recortes -->
+            <div class="section">
+                <div class="section-title">✂️ Recorte Avatar (%)</div>
+                <div class="control-row">
+                    <label>Arriba</label>
+                    <input type="range" id="sl-ct" min="0" max="50" value="0">
+                    <span class="val" id="v-ct">0%</span>
+                </div>
+                <div class="control-row">
+                    <label>Abajo</label>
+                    <input type="range" id="sl-cb" min="0" max="50" value="15">
+                    <span class="val" id="v-cb">15%</span>
+                </div>
+                <div class="control-row">
+                    <label>Izquierda</label>
+                    <input type="range" id="sl-cl" min="0" max="40" value="10">
+                    <span class="val" id="v-cl">10%</span>
+                </div>
+                <div class="control-row">
+                    <label>Derecha</label>
+                    <input type="range" id="sl-cr" min="0" max="40" value="10">
+                    <span class="val" id="v-cr">10%</span>
+                </div>
+            </div>
+
+            <!-- Nombre -->
+            <div class="section">
+                <div class="section-title">🔤 Nombre</div>
+                <div class="control-row">
+                    <label>Vertical</label>
+                    <input type="range" id="sl-name-y" min="60" max="98" value="86">
+                    <span class="val" id="v-name-y">86%</span>
+                </div>
+                <div class="control-row">
+                    <label>Horizontal</label>
+                    <input type="range" id="sl-name-x" min="0" max="80" value="5">
+                    <span class="val" id="v-name-x">5%</span>
+                </div>
+                <div class="control-row">
+                    <label>Ancho zona</label>
+                    <input type="range" id="sl-name-w" min="30" max="100" value="75">
+                    <span class="val" id="v-name-w">75%</span>
+                </div>
+                <div class="control-row">
+                    <label>Tamaño texto</label>
+                    <input type="range" id="sl-name-size" min="4" max="14" value="7">
+                    <span class="val" id="v-name-size">7</span>
+                </div>
+                <p class="tip" style="margin-top:4px">También puedes arrastrar el nombre con el mouse</p>
+            </div>
+
+            <!-- CSS generado -->
+            <div class="section">
+                <div class="section-title">📋 CSS generado</div>
+                <div class="css-output" id="css-output">/* Ajusta los sliders para ver el CSS */</div>
+                <button class="btn btn-outline" style="margin-top:8px;font-size:0.8rem;padding:7px"
+                    onclick="copiarCSS()">📋 Copiar CSS</button>
+            </div>
+
+            <button class="btn btn-gold" onclick="aplicarAlAlbum()">✅ Aplicar al álbum</button>
+
+            <p class="tip">Al aplicar, el CSS se guarda en tu navegador (localStorage) y se aplica automáticamente al
+                abrir el álbum.</p>
+
+        </div>
+
+        <!-- RIGHT: Preview -->
+        <div class="canvas-area">
+            <div class="card-preview" id="card-preview">
+                <div id="bg-gradient"></div>
+                <img id="plantilla-img" src="" alt="">
+                <img id="avatar-img" src="" alt="Avatar" draggable="false">
+                <div id="name-label">NOMBRE_JUGADOR</div>
+            </div>
+            <div class="hint-overlay">Arrastra el avatar o el nombre · Usa los sliders para ajustar</div>
+        </div>
+
+    </div>
+
+    <script src="data/jugadores.js?v=1782000003"></script>
+    <script>
+        // ── Country template map (mirrors app.js) ──
+        const COUNTRY_META = {
+            MX: {
+                name: "México", flag: "🇲🇽", colors: ["#006847", "#CE1126"], bg: "#4CBBB9",
+                plantilla: "img/PlantillaMéxico.png"
+            },
+            AR: {
+                name: "Argentina", flag: "🇦🇷", colors: ["#74ACDF", "#F6B40E"], bg: "#74ACDF",
+                plantilla: "img/cromo_ARG.png"
+            },
+            US: {
+                name: "Estados Unidos", flag: "🇺🇸", colors: ["#B31942", "#0A3161"], bg: "#0A3161",
+                plantilla: "img/Plantilla_US.png"
+            },
+            CL: {
+                name: "Chile", flag: "🇨🇱", colors: ["#D52B1E", "#0039A6"], bg: "#D52B1E",
+                plantilla: "img/Plantilla_Chile.png"
+            },
+            CO: {
+                name: "Colombia", flag: "🇨🇴", colors: ["#FCD116", "#003893"], bg: "#FCD116",
+                plantilla: "img/Plantilla_col.png"
+            },
+            ES: {
+                name: "España", flag: "🇪🇸", colors: ["#AA151B", "#F1BF00"], bg: "#AA151B",
+                plantilla: "img/Plantilla spain.png"
+            },
+            BO: {
+                name: "Bolivia", flag: "🇧🇴", colors: ["#007934", "#D52B1E"], bg: "#007934",
+                plantilla: "img/Plantilla Bolivia.png"
+            },
+            VE: {
+                name: "Venezuela", flag: "🇻🇪", colors: ["#CF142B", "#00247D"], bg: "#00247D",
+                plantilla: "img/Plantilla Venezuela.png"
+            },
+            PE: {
+                name: "Perú", flag: "🇵🇪", colors: ["#D91023", "#FFFFFF"], bg: "#D91023",
+                plantilla: "img/Plantilla Peru.png"
+            },
+            EC: {
+                name: "Ecuador", flag: "🇪🇨", colors: ["#FFD100", "#034EA2"], bg: "#034EA2",
+                plantilla: "img/Plantilla_EC.png"
+            },
+            GT: {
+                name: "Guatemala", flag: "🇬🇹", colors: ["#4997D0", "#FFFFFF"], bg: "#4997D0",
+                plantilla: "img/plantilla guatemala.png"
+            },
+            PY: {
+                name: "Paraguay", flag: "🇵🇾", colors: ["#D52B1E", "#0038A8"], bg: "#D52B1E",
+                plantilla: "img/Plantilla_PY.png"
+            },
+            NI: {
+                name: "Nicaragua", flag: "🇳🇮", colors: ["#0067C6", "#FFFFFF"], bg: "#0067C6",
+                plantilla: "img/Plantilla_Nicaragua.png"
+            },
+            DO: {
+                name: "Rep. Dominicana", flag: "🇩🇴", colors: ["#002D62", "#CE1126"], bg: "#002D62",
+                plantilla: "img/Plantilla RD.png"
+            },
+            HN: {
+                name: "Honduras", flag: "🇭🇳", colors: ["#0073CF", "#FFFFFF"], bg: "#0073CF",
+                plantilla: "img/Plantilla honduras.png"
+            },
+            PR: {
+                name: "Puerto Rico", flag: "🇵🇷", colors: ["#ED0A3F", "#0050F0"], bg: "#0050F0",
+                plantilla: "img/Plantilla PR.png"
+            },
+            SV: {
+                name: "El Salvador", flag: "🇸🇻", colors: ["#0F47AF", "#FFFFFF"], bg: "#0F47AF",
+                plantilla: "img/Plantilla SV.png"
+            },
+            PA: {
+                name: "Panamá", flag: "🇵🇦", colors: ["#DA121A", "#003DA5"], bg: "#003DA5",
+                plantilla: "img/plantilla panama.png"
+            },
+        };
+
+        // ── State ──
+        let currentCountry = 'MX';
+        let cfg = loadConfig();
+
+        // ── DOM refs ──
+        const preview = document.getElementById('card-preview');
+        const bgGrad = document.getElementById('bg-gradient');
+        const plantImg = document.getElementById('plantilla-img');
+        const avatarImg = document.getElementById('avatar-img');
+        const nameLabel = document.getElementById('name-label');
+        const cssOut = document.getElementById('css-output');
+        const sel = document.getElementById('country-select');
+
+        // ── Slider map ──
+        const SLIDERS = [
+            { id: 'sl-size', val: 'v-size', suffix: '%', cfg: 'avatarSize' },
+            { id: 'sl-x', val: 'v-x', suffix: '%', cfg: 'avatarX' },
+            { id: 'sl-y', val: 'v-y', suffix: '%', cfg: 'avatarY' },
+            { id: 'sl-ct', val: 'v-ct', suffix: '%', cfg: 'cropTop' },
+            { id: 'sl-cb', val: 'v-cb', suffix: '%', cfg: 'cropBottom' },
+            { id: 'sl-cl', val: 'v-cl', suffix: '%', cfg: 'cropLeft' },
+            { id: 'sl-cr', val: 'v-cr', suffix: '%', cfg: 'cropRight' },
+            { id: 'sl-name-y', val: 'v-name-y', suffix: '%', cfg: 'nameY' },
+            { id: 'sl-name-x', val: 'v-name-x', suffix: '%', cfg: 'nameX' },
+            { id: 'sl-name-w', val: 'v-name-w', suffix: '%', cfg: 'nameWidth' },
+            { id: 'sl-name-size', val: 'v-name-size', suffix: '', cfg: 'nameFontSize' },
+        ];
+
+        // ── Default config ──
+        function defaultConfig() {
+            return {
+                avatarSize: 90, avatarX: -8, avatarY: 0,
+                cropTop: 0, cropBottom: 15, cropLeft: 10, cropRight: 10,
+                nameY: 86, nameX: 5, nameWidth: 75, nameFontSize: 7,
+            };
+        }
+
+        function loadConfig() {
+            try {
+                const saved = localStorage.getItem('cromo-configurator');
+                if (saved) return { ...defaultConfig(), ...JSON.parse(saved) };
+            } catch (e) { }
+            return defaultConfig();
+        }
+
+        // ── Populate country selector ──
+        function buildSelector() {
+            Object.entries(COUNTRY_META).forEach(([code, meta]) => {
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `${meta.flag} ${meta.name}`;
+                sel.appendChild(opt);
+            });
+            sel.value = currentCountry;
+        }
+
+        sel.addEventListener('change', () => {
+            currentCountry = sel.value;
+            updateAll();
+        });
+
+        // ── Sync sliders with cfg ──
+        function syncSlidersFromCfg() {
+            SLIDERS.forEach(({ id, val, suffix, cfg: key }) => {
+                const el = document.getElementById(id);
+                el.value = cfg[key];
+                document.getElementById(val).textContent = cfg[key] + suffix;
+            });
+        }
+
+        // ── Apply avatar CSS-based clip ──
+        function updateAll() {
+            const meta = COUNTRY_META[currentCountry];
+
+            // Background
+            bgGrad.style.background = `linear-gradient(145deg, ${meta.colors[0]} 0%, ${meta.colors[1]} 50%, ${meta.colors[0]} 100%)`;
+
+            // Plantilla
+            if (meta.plantilla) {
+                plantImg.src = meta.plantilla;
+                plantImg.style.display = 'block';
+            } else {
+                plantImg.style.display = 'none';
+            }
+
+            applyAvatarStyle();
+            applyNameStyle();
+            generateCSS();
+        }
+
+        async function fetchTestAvatar() {
+            const btn = document.querySelector('button[onclick="fetchTestAvatar()"]');
+            const username = document.getElementById('test-username').value.trim();
+            if (!username) return;
+
+            btn.textContent = '...';
+            btn.disabled = true;
+
+            try {
+                let userId = null;
+                let realName = username;
+
+                if (/^\d+$/.test(username)) {
+                    userId = username;
+                } else {
+                    const res = await fetch(`/api/user?username=${username}`);
+                    const data = await res.json();
+                    
+                    if (data.data && data.data.length > 0) {
+                        userId = data.data[0].id;
+                        realName = data.data[0].displayName || username;
+                    } else {
+                        alert('Usuario no encontrado en Roblox');
+                        btn.textContent = 'Cargar';
+                        btn.disabled = false;
+                        return;
+                    }
+                }
+                
+                const avatarResp = await fetch(`/api/avatar?userIds=${userId}`);
+                const avatarData = await avatarResp.json();
+                if (avatarData.data && avatarData.data.length > 0 && avatarData.data[0].imageUrl) {
+                    avatarImg.src = avatarData.data[0].imageUrl;
+                } else {
+                    alert('No se pudo cargar el avatar de Roblox');
+                    btn.textContent = 'Cargar';
+                    btn.disabled = false;
+                    return;
+                }
+                
+                nameLabel.textContent = realName.toUpperCase();
+            } catch (e) {
+                console.error('Error fetching avatar:', e);
+                alert('Error al buscar el usuario');
+            } finally {
+                btn.textContent = 'Cargar';
+                btn.disabled = false;
+            }
+        }
+
+        function applyAvatarStyle() {
+            const c = cfg;
+            const cl = c.cropLeft, cr = c.cropRight, ct = c.cropTop, cb = c.cropBottom;
+            const size = c.avatarSize;
+
+            // Use CSS clip-path to simulate cropping
+            avatarImg.style.width = size + '%';
+            avatarImg.style.height = 'auto';
+            avatarImg.style.left = c.avatarX + '%';
+            avatarImg.style.top = c.avatarY + '%';
+
+            // clip-path inset simulates crop
+            avatarImg.style.clipPath = `inset(${ct}% ${cr}% ${cb}% ${cl}%)`;
+
+            // Remove dragged position override if user changes slider
+            avatarImg.style.transform = '';
+        }
+
+        function applyNameStyle() {
+            const c = cfg;
+            nameLabel.style.top = c.nameY + '%';
+            nameLabel.style.left = c.nameX + '%';
+            nameLabel.style.width = c.nameWidth + '%';
+            nameLabel.style.fontSize = c.nameFontSize + '%';  // % of card width via em trick
+            nameLabel.style.textAlign = 'center';
+            // Use vmin-based trick: font-size as percent of card height
+            const cardH = preview.offsetHeight || 500;
+            nameLabel.style.fontSize = (cardH * c.nameFontSize / 100) + 'px';
+        }
+
+        // ── Sliders ──
+        SLIDERS.forEach(({ id, val, suffix, cfg: key }) => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', () => {
+                cfg[key] = parseFloat(el.value);
+                document.getElementById(val).textContent = el.value + suffix;
+                applyAvatarStyle();
+                applyNameStyle();
+                generateCSS();
+            });
+        });
+
+        // ── Drag Avatar ──
+        let dragTarget = null, dragOffX = 0, dragOffY = 0;
+        let avatarBaseX = cfg.avatarX, avatarBaseY = cfg.avatarY;
+
+        avatarImg.addEventListener('mousedown', (e) => {
+            dragTarget = 'avatar';
+            const rect = preview.getBoundingClientRect();
+            dragOffX = e.clientX - rect.left - (cfg.avatarX / 100 * rect.width);
+            dragOffY = e.clientY - rect.top - (cfg.avatarY / 100 * rect.height);
+            e.preventDefault();
+        });
+
+        nameLabel.addEventListener('mousedown', (e) => {
+            dragTarget = 'name';
+            const rect = preview.getBoundingClientRect();
+            dragOffX = e.clientX - rect.left - (cfg.nameX / 100 * rect.width);
+            dragOffY = e.clientY - rect.top - (cfg.nameY / 100 * rect.height);
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!dragTarget) return;
+            const rect = preview.getBoundingClientRect();
+            const x = ((e.clientX - rect.left - dragOffX) / rect.width * 100);
+            const y = ((e.clientY - rect.top - dragOffY) / rect.height * 100);
+
+            if (dragTarget === 'avatar') {
+                cfg.avatarX = Math.round(x * 10) / 10;
+                cfg.avatarY = Math.round(y * 10) / 10;
+                document.getElementById('sl-x').value = cfg.avatarX;
+                document.getElementById('v-x').textContent = cfg.avatarX + '%';
+                document.getElementById('sl-y').value = cfg.avatarY;
+                document.getElementById('v-y').textContent = cfg.avatarY + '%';
+                applyAvatarStyle();
+            } else {
+                cfg.nameX = Math.round(x * 10) / 10;
+                cfg.nameY = Math.round(y * 10) / 10;
+                document.getElementById('sl-name-x').value = cfg.nameX;
+                document.getElementById('v-name-x').textContent = cfg.nameX + '%';
+                document.getElementById('sl-name-y').value = cfg.nameY;
+                document.getElementById('v-name-y').textContent = cfg.nameY + '%';
+                applyNameStyle();
+            }
+            generateCSS();
+        });
+
+        document.addEventListener('mouseup', () => { dragTarget = null; });
+
+        // ── CSS Generator ──
+        function generateCSS() {
+            const c = cfg;
+const css = `.card-has-template .card-avatar {
+    position: absolute;
+    width: ${c.avatarSize}%;
+    left: ${c.avatarX}%;
+    top: ${c.avatarY}%;
+    height: auto;
+    z-index: 2;
+    clip-path: inset(${c.cropTop}% ${c.cropRight}% ${c.cropBottom}% ${c.cropLeft}%);
+}
+
+.card-has-template .card-name-bar {
+    position: absolute;
+    top: ${c.nameY}%;
+    left: ${c.nameX}%;
+    width: ${c.nameWidth}%;
+    z-index: 3;
+    background: transparent;
+    text-align: center;
+}
+
+.card-has-template .card-name {
+    font-size: ${c.nameFontSize * 0.1}em;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}`;
+            cssOut.textContent = css;
+            return css;
+        }
+
+        function copiarCSS() {
+            navigator.clipboard.writeText(generateCSS()).then(() => {
+                const btn = event.target;
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => btn.textContent = '📋 Copiar CSS', 1500);
+            });
+        }
+
+        function aplicarAlAlbum() {
+            localStorage.setItem('cromo-configurator', JSON.stringify(cfg));
+
+            // Build the CSS string
+            const css = generateCSS();
+            localStorage.setItem('cromo-custom-css', css);
+
+            alert('✅ Configuración guardada.\n\nAbre el álbum y recarga la página para ver los cambios aplicados.');
+        }
+
+        // ── Init ──
+        buildSelector();
+        syncSlidersFromCfg();
+        updateAll();
+        fetchTestAvatar(); // Load default test avatar
+        window.addEventListener('resize', applyNameStyle);
+    </script>
+</body>
+
+</html>
+navigator.clipboard.writeText(generateCSS()).then(() => {
+const btn = event.target;
+btn.textContent = '✅ Copiado!';
+setTimeout(() => btn.textContent = '📋 Copiar CSS', 1500);
+});
+}
+
+function aplicarAlAlbum() {
+localStorage.setItem('cromo-configurator', JSON.stringify(cfg));
+
+// Build the CSS string
+const css = generateCSS();
+localStorage.setItem('cromo-custom-css', css);
+
+alert('✅ Configuración guardada.\n\nAbre el álbum y recarga la página para ver los cambios aplicados.');
+}
+
+// ── Init ──
+buildSelector();
+syncSlidersFromCfg();
+updateAll();
+fetchTestAvatar(); // Load default test avatar
+window.addEventListener('resize', applyNameStyle);
+</script>
+</body>
+
+</html>

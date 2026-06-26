@@ -52,10 +52,34 @@ function getCountryMeta(code) {
 // ============================================
 // CONSTANTS
 // ============================================
-const CARDS_PER_SPREAD = 21; // 10 left + 11 right
+const CARDS_PER_SPREAD = 21; // 10 izquierda + 11 derecha
 const CARDS_LEFT = 10;
 const CARDS_RIGHT = 11;
 const AVATAR_BATCH_SIZE = 100;
+
+// ============================================
+// COUNTRY TEMPLATES (plantillas y fondos PNG)
+// ============================================
+const COUNTRY_TEMPLATES = {
+    MX: { plantilla: 'img/PlantillaMéxico.png', fondo: 'img/fondo Mex.png' },
+    AR: { plantilla: 'img/cromo_ARG.png', fondo: 'img/fondo_AR.png' },
+    US: { plantilla: 'img/Plantilla_US.png', fondo: 'img/Fondo_US.png' },
+    CL: { plantilla: 'img/Plantilla_Chile.png', fondo: 'img/Fondo Chile.png' },
+    CO: { plantilla: 'img/Plantilla_col.png', fondo: 'img/Fondo_Col.png' },
+    ES: { plantilla: 'img/Plantilla spain.png', fondo: 'img/Fondo Spain.png' },
+    BO: { plantilla: 'img/Plantilla Bolivia.png', fondo: 'img/Fondo Bolivia.png' },
+    VE: { plantilla: 'img/Plantilla Venezuela.png', fondo: 'img/Fondo Venezuela.png' },
+    PE: { plantilla: 'img/Plantilla Peru.png', fondo: 'img/Fondo Peru.png' },
+    EC: { plantilla: 'img/Plantilla_EC.png', fondo: 'img/fondo Ecuador.png' },
+    GT: { plantilla: 'img/plantilla guatemala.png', fondo: 'img/fondo guatemala.png' },
+    PY: { plantilla: 'img/Plantilla_PY.png', fondo: 'img/Fondo_PY.png' },
+    NI: { plantilla: 'img/Plantilla_Nicaragua.png', fondo: 'img/Fondo_Nicaragua.png' },
+    DO: { plantilla: 'img/Plantilla RD.png', fondo: 'img/Fondo RD.png' },
+    HN: { plantilla: 'img/Plantilla honduras.png', fondo: 'img/fondo honduras.png' },
+    PR: { plantilla: 'img/Plantilla PR.png', fondo: 'img/Fondo PR.png' },
+    SV: { plantilla: 'img/Plantilla SV.png', fondo: 'img/Fondo SV.png' },
+    PA: { plantilla: 'img/plantilla panama.png', fondo: 'img/fondo panama.png' },
+};
 
 // ============================================
 // STATE
@@ -180,30 +204,30 @@ async function setAvatarImage(imgEl, userId) {
     }
 
     imgEl.classList.add('loading');
-    
+
     let localAttempts = 0;
     while (!avatarCache[userId] && localAttempts < 8) {
         if (!avatarPromises[userId]) {
             fetchAvatars([userId]);
         }
-        
+
         try {
             await avatarPromises[userId];
-        } catch (e) {}
-        
+        } catch (e) { }
+
         if (avatarCache[userId]) {
             imgEl.src = avatarCache[userId];
             imgEl.classList.remove('loading');
             imgEl.classList.add('loaded');
             return;
         }
-        
+
         localAttempts++;
         await new Promise(res => setTimeout(res, 1000));
     }
 
     // Fallback: si despues de todos los intentos no cargó, mostrar avatar genérico
-    imgEl.onerror = null; // evitar loop
+    imgEl.onerror = null;
     imgEl.src = 'https://tr.rbxcdn.com/38c6edcb50633730ff4cf39ac8859840/150/150/AvatarHeadshot/Png';
     imgEl.classList.remove('loading');
     imgEl.classList.add('loaded');
@@ -216,29 +240,40 @@ async function setAvatarImage(imgEl, userId) {
 function createCardElement(player, country) {
     const meta = getCountryMeta(country);
     const [c1, c2] = meta.colors;
+    const tpl = COUNTRY_TEMPLATES[country]; // null si no tiene plantilla
 
     const card = document.createElement('div');
     card.className = 'card-slot';
+    if (tpl) card.classList.add('card-has-template');
     card.setAttribute('data-player-id', player.id);
 
-    // Background gradient
+    // Background gradient (oculto si hay plantilla via CSS)
     const bg = document.createElement('div');
     bg.className = 'card-bg';
     bg.style.background = `linear-gradient(145deg, ${c1} 0%, ${c2} 50%, ${c1} 100%)`;
     card.appendChild(bg);
 
-    // FIFA 26 watermark
+    // FIFA 26 watermark (oculto si hay plantilla via CSS)
     const watermark = document.createElement('div');
     watermark.className = 'card-watermark';
     watermark.innerHTML = `<span class="wm-26">26</span><span class="wm-fifa">FIFA</span>`;
     card.appendChild(watermark);
+
+    // Plantilla PNG (si existe para este pais)
+    if (tpl) {
+        const plantillaImg = document.createElement('img');
+        plantillaImg.className = 'card-plantilla';
+        plantillaImg.src = tpl.plantilla;
+        plantillaImg.alt = '';
+        plantillaImg.draggable = false;
+        card.appendChild(plantillaImg);
+    }
 
     // Avatar
     const avatarWrap = document.createElement('div');
     avatarWrap.className = 'card-avatar';
     const img = document.createElement('img');
     img.alt = player.d || player.u || `Jugador ${player.id}`;
-    // No usar lazy loading: todas las cartas son visibles en pantalla
     img.classList.add('loading');
 
     // Auto-retry si la imagen falla al cargar por timeout o error de red
@@ -248,14 +283,12 @@ function createCardElement(player, country) {
             img.setAttribute('data-retries', retries + 1);
             setTimeout(() => {
                 if (!img.src) return;
-                // Anadir parametro para forzar al navegador a reintentar
                 let url = img.src;
                 url = url.replace(/([?&])retry=\d+/, '');
                 url += (url.includes('?') ? '&' : '?') + 'retry=' + Date.now();
                 img.src = url;
             }, 2000);
         } else {
-            // Fallback final - desactivar onerror para evitar loop infinito
             img.onerror = null;
             img.src = 'https://tr.rbxcdn.com/38c6edcb50633730ff4cf39ac8859840/150/150/AvatarHeadshot/Png';
             img.classList.remove('loading');
@@ -270,7 +303,7 @@ function createCardElement(player, country) {
     // Load avatar
     setAvatarImage(img, player.id);
 
-    // Flag
+    // Flag emoji (oculto si hay plantilla via CSS, ya viene en la imagen)
     const flag = document.createElement('div');
     flag.className = 'card-flag';
     flag.textContent = meta.flag;
@@ -313,6 +346,8 @@ function createCountryLabel(country) {
 // ============================================
 // PAGE RENDERING
 // ============================================
+// PAGE RENDERING
+// ============================================
 async function renderPage(pageIndex) {
     if (pageIndex < 0 || pageIndex >= allPages.length) return;
 
@@ -320,7 +355,7 @@ async function renderPage(pageIndex) {
     const pageData = allPages[pageIndex];
     const meta = getCountryMeta(pageData.country);
 
-    // Update page backgrounds with country color
+    // Fondo de las paginas (solo gradiente de color del pais)
     pageLeft.style.background = `linear-gradient(135deg, #f5f0e8 0%, ${meta.bg}15 100%)`;
     pageRight.style.background = `linear-gradient(225deg, #f5f0e8 0%, ${meta.bg}15 100%)`;
 
@@ -335,14 +370,13 @@ async function renderPage(pageIndex) {
     gridLeft.classList.add('transitioning');
     gridRight.classList.add('transitioning');
 
-    // Collect all user IDs for this page to batch-fetch avatars
+    // Cargar avatares en batch para esta pagina
     const userIds = pageData.cards.map(p => p.id);
-    fetchAvatars(userIds); // Fire and forget, images will load individually
+    fetchAvatars(userIds);
 
-    // LEFT PAGE: 2 empty + up to 10 cards = 12 cells
+    // LEFT PAGE: 2 vacios + hasta 10 cartas = 12 celdas (mismo que antes)
     gridLeft.appendChild(createEmptySlot());
     gridLeft.appendChild(createEmptySlot());
-
     for (let i = 0; i < CARDS_LEFT; i++) {
         if (i < pageData.cards.length) {
             gridLeft.appendChild(createCardElement(pageData.cards[i], pageData.country));
@@ -351,7 +385,7 @@ async function renderPage(pageIndex) {
         }
     }
 
-    // RIGHT PAGE: up to 11 cards + 1 country label = 12 cells
+    // RIGHT PAGE: hasta 11 cartas + etiqueta de pais
     for (let i = CARDS_LEFT; i < CARDS_PER_SPREAD; i++) {
         if (i < pageData.cards.length) {
             gridRight.appendChild(createCardElement(pageData.cards[i], pageData.country));
@@ -368,7 +402,7 @@ async function renderPage(pageIndex) {
     // Update footer
     pageIndicator.textContent = `Página ${currentPage + 1} / ${allPages.length}`;
 
-    // Segunda revisada: esperar ~2.5 segundos despues de renderizar para revisar imagenes rotas
+    // Segunda revisada: revisar imagenes rotas solo en la pagina actual
     if (window.brokenImagesTimeout) clearTimeout(window.brokenImagesTimeout);
     window.brokenImagesTimeout = setTimeout(checkBrokenImages, 2500);
 }
@@ -377,67 +411,278 @@ async function renderPage(pageIndex) {
 // MODAL
 // ============================================
 function openModal(player, country) {
-    const meta = getCountryMeta(country);
-    const [c1, c2] = meta.colors;
-
     // Remove previous card if any
     const existingCard = modalCard.querySelector('.card-slot');
     if (existingCard) existingCard.remove();
     const existingInfo = modalCard.querySelector('.modal-info');
     if (existingInfo) existingInfo.remove();
+    const existingBtn = modalCard.querySelector('.download-btn');
+    if (existingBtn) existingBtn.remove();
 
-    // Build enlarged card
-    const card = document.createElement('div');
-    card.className = 'card-slot';
-
-    const bg = document.createElement('div');
-    bg.className = 'card-bg';
-    bg.style.background = `linear-gradient(145deg, ${c1} 0%, ${c2} 50%, ${c1} 100%)`;
-    card.appendChild(bg);
-
-    const watermark = document.createElement('div');
-    watermark.className = 'card-watermark';
-    watermark.innerHTML = `<span class="wm-26">26</span><span class="wm-fifa">FIFA</span>`;
-    card.appendChild(watermark);
-
-    const avatarWrap = document.createElement('div');
-    avatarWrap.className = 'card-avatar';
-    const img = document.createElement('img');
-    img.alt = player.d || player.u || `Jugador ${player.id}`;
-    img.classList.add('loading');
-    avatarWrap.appendChild(img);
-    card.appendChild(avatarWrap);
-
-    setAvatarImage(img, player.id);
-
-    const flag = document.createElement('div');
-    flag.className = 'card-flag';
-    flag.textContent = meta.flag;
-    card.appendChild(flag);
-
-    const nameBar = document.createElement('div');
-    nameBar.className = 'card-name-bar';
-    const nameText = document.createElement('div');
-    nameText.className = 'card-name';
-    nameText.textContent = player.d || player.u || `Jugador_${player.id}`;
-    nameBar.appendChild(nameText);
-    card.appendChild(nameBar);
+    // Build enlarged card using the exact same logic as the grid
+    const card = createCardElement(player, country);
+    card.id = 'modal-card-inner';
+    // Remove the click listener that createCardElement adds, so clicking the modal doesn't re-open it
+    const newCard = card.cloneNode(true);
+    newCard.id = 'modal-card-inner';
 
     modalCard.insertBefore(card, modalCard.firstChild);
 
-    // Add info below
-    const info = document.createElement('div');
-    info.className = 'modal-info';
-    info.innerHTML = `
-        <div><span class="info-label">ID</span><div class="info-value">${player.id}</div></div>
-        ${player.u ? `<div><span class="info-label">Username</span><div class="info-value">${player.u}</div></div>` : ''}
-        ${player.r ? `<div><span class="info-label">Rango</span><div class="info-value">${player.r}</div></div>` : ''}
-        <div><span class="info-label">País</span><div class="info-value">${meta.flag} ${meta.name}</div></div>
-    `;
-    modalCard.appendChild(info);
+    // Botón de descarga
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'download-btn';
+    downloadBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar cromo`;
+    downloadBtn.addEventListener('click', () => downloadCard(card, player.d || player.u || `Jugador_${player.id}`));
+    modalCard.appendChild(downloadBtn);
 
     modalOverlay.classList.add('active');
 }
+
+// ============================================
+// AVATAR CLIP-PATH FIX FOR HTML2CANVAS
+// html2canvas doesn't support clip-path: inset(), so we convert it to
+// an equivalent overflow:hidden wrapper before rendering.
+// ============================================
+function fixAvatarClipForHtml2Canvas(cardClone) {
+    const avatarEl = cardClone.querySelector('.card-avatar');
+    if (!avatarEl) return;
+
+    // --- FIX: DOM ORDER / Z-INDEX ---
+    // html2canvas renders elements in DOM order and doesn't always respect z-index.
+    // Move the avatar to be the last child so it paints on top of everything.
+    const nameBar = cardClone.querySelector('.card-name-bar');
+    if (nameBar && cardClone.contains(avatarEl)) {
+        cardClone.insertBefore(avatarEl, nameBar);
+    }
+
+    const computedClip = window.getComputedStyle(avatarEl).clipPath;
+    if (!computedClip || computedClip === 'none') return;
+
+    // Parse inset values — browsers may report in px or %
+    const match = computedClip.match(/inset\(([^)]+)\)/);
+    if (!match) return;
+
+    const parts = match[1].trim().split(/\s+/);
+    if (parts.length < 4) return;
+
+    const W = avatarEl.offsetWidth;
+    let H = avatarEl.offsetHeight;
+    // height:auto (from configurador) makes offsetHeight 0 — fall back to the img's rendered height
+    if (H === 0) {
+        const imgFallback = avatarEl.querySelector('img');
+        if (imgFallback) H = imgFallback.offsetHeight || Math.round(W * (imgFallback.naturalHeight || imgFallback.naturalWidth || 1) / (imgFallback.naturalWidth || imgFallback.naturalHeight || 1));
+    }
+    if (W === 0 || H === 0) return;
+
+    function parseVal(v, dim) {
+        if (v.endsWith('%'))  return parseFloat(v) / 100 * dim;
+        if (v.endsWith('px')) return parseFloat(v);
+        return parseFloat(v); // assume px
+    }
+
+    const cropT = parseVal(parts[0], H);
+    const cropR = parseVal(parts[1], W);
+    const cropB = parseVal(parts[2], H);
+    const cropL = parseVal(parts[3], W);
+
+    const img = avatarEl.querySelector('img');
+    if (!img) return;
+
+    // Freeze img dimensions in pixels before re-parenting
+    const imgW = img.offsetWidth  || W * 1.2;
+    const imgH = img.offsetHeight || H;
+
+    // Inner div that simulates the inset crop via overflow:hidden
+    const inner = document.createElement('div');
+    inner.style.cssText = `
+        position: absolute;
+        top: ${cropT}px;
+        left: ${cropL}px;
+        width: ${Math.max(0, W - cropL - cropR)}px;
+        height: ${Math.max(0, H - cropT - cropB)}px;
+        overflow: hidden;
+    `;
+
+    // Pin img so it keeps the same visual appearance
+    img.style.cssText = `
+        position: absolute;
+        top: ${-cropT}px;
+        left: ${-cropL}px;
+        width: ${imgW}px;
+        height: ${imgH}px;
+        object-fit: cover;
+        object-position: center top;
+        opacity: 1;
+    `;
+
+    // Reparent img → inner → avatarEl
+    if (img.parentNode) img.parentNode.removeChild(img);
+    inner.appendChild(img);
+    avatarEl.appendChild(inner);
+
+    // Remove the clip-path so html2canvas doesn't try (and fail) to apply it
+    avatarEl.style.clipPath = 'none';
+}
+
+// Descarga una imagen (aunque sea de otro dominio con CORS) y la convierte a
+// data URL base64. Así html2canvas puede dibujarla sin problemas de CORS/caché.
+async function imageUrlToDataURL(url) {
+    const resp = await fetch(url, { mode: 'cors', cache: 'reload' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const blob = await resp.blob();
+    return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+async function downloadCard(cardEl, playerName) {
+    const btn = modalCard.querySelector('.download-btn');
+    if (btn) { btn.textContent = 'Generando...'; btn.disabled = true; }
+
+    try {
+        const TARGET_W = 600;
+        const TARGET_H = Math.round(600 * 1453 / 1082);
+
+        // Read configurator settings (same keys saved by configurador.html)
+        const DEF_CFG = {
+            avatarSize: 90, avatarX: -8, avatarY: 0,
+            cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0,
+            nameY: 86, nameX: 5, nameWidth: 75, nameFontSize: 7,
+        };
+        let cfg = { ...DEF_CFG };
+        try {
+            const saved = localStorage.getItem('cromo-configurator');
+            if (saved) cfg = { ...DEF_CFG, ...JSON.parse(saved) };
+        } catch (e) {}
+
+        const loadImage = (src, crossOrigin) => new Promise((resolve, reject) => {
+            const im = new Image();
+            if (crossOrigin) im.crossOrigin = crossOrigin;
+            im.onload = () => resolve(im);
+            im.onerror = () => reject(new Error('Load failed'));
+            im.src = src;
+        });
+
+        // Gather image sources
+        const plantillaEl  = cardEl.querySelector('.card-plantilla');
+        const plantillaSrc = plantillaEl ? plantillaEl.src : null;
+
+        const avatarImgEl = cardEl.querySelector('.card-avatar img');
+        let avatarSrc = avatarImgEl ? avatarImgEl.src : null;
+
+        // Convert external avatar to data URL to avoid CORS-cache problems
+        if (avatarSrc && /^https?:\/\//i.test(avatarSrc)) {
+            try { avatarSrc = await imageUrlToDataURL(avatarSrc); }
+            catch (e) { console.warn('CORS dataURL fallback failed:', e); }
+        }
+
+        // Load both images in parallel
+        const [plantImg, avatarImg] = await Promise.all([
+            plantillaSrc ? loadImage(plantillaSrc, 'anonymous') : Promise.resolve(null),
+            avatarSrc    ? loadImage(avatarSrc)                 : Promise.resolve(null),
+        ]);
+
+        // Build output canvas
+        const out = document.createElement('canvas');
+        out.width  = TARGET_W;
+        out.height = TARGET_H;
+        const ctx  = out.getContext('2d');
+
+        // Layer 1 – background
+        if (plantImg) {
+            ctx.drawImage(plantImg, 0, 0, TARGET_W, TARGET_H);
+        } else {
+            // No template: draw the gradient from .card-bg
+            const bgEl  = cardEl.querySelector('.card-bg');
+            const colors = bgEl
+                ? (bgEl.style.background.match(/#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)/g) || [])
+                : [];
+            if (colors.length >= 2) {
+                const ang = 145 * Math.PI / 180;
+                const d   = Math.hypot(TARGET_W, TARGET_H);
+                const grd = ctx.createLinearGradient(
+                    TARGET_W/2 - Math.cos(ang)*d/2, TARGET_H/2 - Math.sin(ang)*d/2,
+                    TARGET_W/2 + Math.cos(ang)*d/2, TARGET_H/2 + Math.sin(ang)*d/2
+                );
+                grd.addColorStop(0,   colors[0]);
+                grd.addColorStop(0.5, colors[1]);
+                grd.addColorStop(1,   colors[0]);
+                ctx.fillStyle = grd;
+            } else {
+                ctx.fillStyle = '#1a1a2e';
+            }
+            ctx.fillRect(0, 0, TARGET_W, TARGET_H);
+        }
+
+        // Layer 2 – avatar with crop applied via canvas clipping
+        if (avatarImg) {
+            const nw = avatarImg.naturalWidth  || 1;
+            const nh = avatarImg.naturalHeight || 1;
+
+            const avatarW = TARGET_W * cfg.avatarSize / 100;
+            const avatarH = Math.round(nh * avatarW / nw);
+            const posX    = TARGET_W * cfg.avatarX / 100;
+            const posY    = TARGET_H * cfg.avatarY / 100;
+
+            const cropT = avatarH * cfg.cropTop    / 100;
+            const cropB = avatarH * cfg.cropBottom / 100;
+            const cropL = avatarW * cfg.cropLeft   / 100;
+            const cropR = avatarW * cfg.cropRight  / 100;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(
+                posX + cropL,
+                posY + cropT,
+                Math.max(0, avatarW - cropL - cropR),
+                Math.max(0, avatarH - cropT - cropB)
+            );
+            ctx.clip();
+            ctx.drawImage(avatarImg, posX, posY, avatarW, avatarH);
+            ctx.restore();
+        }
+
+        // Layer 3 – player name
+        const nameEl   = cardEl.querySelector('.card-name');
+        const nameText = (nameEl ? nameEl.textContent : playerName || '').toUpperCase();
+        const fontSize = Math.round(TARGET_H * cfg.nameFontSize / 100);
+        const textCX   = TARGET_W * (cfg.nameX + cfg.nameWidth / 2) / 100;
+        // nameY% = top of the name-bar div; base CSS gives it height: 9% and
+        // flex align-items:center, so the text center is at nameY% + 4.5%
+        const textY    = TARGET_H * (cfg.nameY / 100 + 0.045);
+
+        try { await document.fonts.load(`900 ${fontSize}px Outfit`); } catch (e) {}
+
+        ctx.save();
+        ctx.font          = `900 ${fontSize}px Outfit, Arial, sans-serif`;
+        ctx.fillStyle     = '#ffffff';
+        ctx.textAlign     = 'center';
+        ctx.textBaseline  = 'middle';
+        ctx.shadowColor   = 'rgba(0,0,0,0.85)';
+        ctx.shadowBlur    = 4;
+        ctx.shadowOffsetY = 1;
+        ctx.fillText(nameText, textCX, textY);
+        ctx.restore();
+
+        const link = document.createElement('a');
+        link.download = `cromo_${playerName}.png`;
+        link.href = out.toDataURL('image/png');
+        link.click();
+
+    } catch (e) {
+        console.error('Error al generar imagen:', e);
+        alert('No se pudo generar la imagen.');
+    } finally {
+        if (btn) {
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar cromo`;
+            btn.disabled = false;
+        }
+    }
+}
+
 
 function closeModal() {
     modalOverlay.classList.remove('active');
@@ -671,6 +916,20 @@ function init() {
         console.error('ALBUM_DATA not found. Make sure data/jugadores.js is loaded.');
         loadingScreen.querySelector('.loading-text').textContent = 'Error: datos no encontrados';
         return;
+    }
+
+    // Load custom configurator CSS if exists
+    let customCSS = localStorage.getItem('cromo-custom-css');
+    if (customCSS) {
+        // Fix legacy em units from old configurador exports to cqw for proper scaling
+        customCSS = customCSS.replace(/font-size:\s*([\d.]+)em/g, (_match, p1) => {
+            return `font-size: ${parseFloat(p1) * 10}cqw`;
+        });
+        const styleEl = document.createElement('style');
+        styleEl.id = 'configurador-styles';
+        styleEl.textContent = customCSS;
+        document.head.appendChild(styleEl);
+        console.log('[Configurador] Estilos aplicados desde configurador.');
     }
 
     // Build pages
